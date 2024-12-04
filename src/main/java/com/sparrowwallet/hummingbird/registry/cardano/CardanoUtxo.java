@@ -61,7 +61,9 @@ public class CardanoUtxo extends RegistryItem {
         }
         // TODO: Currently, the value of the Keypath is a default value of m/1852'/1815'/0'/0/0.
         if (keyPath != null){
-            map.put(new UnsignedInteger(KEY_PATH), keyPath.toCbor());
+            DataItem item = keyPath.toCbor();
+            item.setTag(RegistryType.CRYPTO_KEYPATH.getTag());
+            map.put(new UnsignedInteger(KEY_PATH), item);
         }
         if (address != null){
             map.put(new UnsignedInteger(ADDRESS), new UnicodeString(address));

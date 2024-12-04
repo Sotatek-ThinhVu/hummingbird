@@ -47,7 +47,9 @@ public class CardanoSignRequest extends RegistryItem {
     public DataItem toCbor() {
         Map map = new Map();
         if (requestId != null) {
-            map.put(new UnsignedInteger(Keys.REQUEST_ID), new ByteString(requestId));
+            DataItem item = new ByteString(requestId);
+            item.setTag(37);
+            map.put(new UnsignedInteger(Keys.REQUEST_ID),item );
         }
         if (signData != null) {
             map.put(new UnsignedInteger(Keys.SIGN_DATA), new ByteString(signData));

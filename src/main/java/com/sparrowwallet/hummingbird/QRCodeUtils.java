@@ -13,7 +13,7 @@ import java.util.List;
 
 public class QRCodeUtils {
 
-    private static final int MAX_FRAGMENT_LENGTH = 200;
+    private static final int MAX_FRAGMENT_LENGTH = 100;
 
     // Generate QR code from a string
     private static BufferedImage generateQRCodeImage(String data) throws Exception {

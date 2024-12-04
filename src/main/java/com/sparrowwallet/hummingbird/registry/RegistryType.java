@@ -35,7 +35,7 @@ public enum RegistryType {
     SSKR("sskr", 40309, URSSKR.class),
     PSBT("psbt", 40310, URPSBT.class),
     ACCOUNT_DESCRIPTOR("account-descriptor", 40311, URAccountDescriptor.class),
-    CARDANO_UTXO("cardano-utxo", 40312, CardanoUtxo.class),
+    CARDANO_UTXO("cardano-utxo", 2201, CardanoUtxo.class),
     CARDANO_SIGNATURE("cardano-signature", 2203, CardanoSignature.class),
     CARDANO_CERT_KEY("cardano-cert-key", 2204, CardanoCertKey.class),
     CARDANO_SIGN_REQUEST("cardano-sign-request", 2202, CardanoSignRequest.class);

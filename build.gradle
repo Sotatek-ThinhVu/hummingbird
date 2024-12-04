@@ -16,6 +16,8 @@ repositories {
 dependencies {
     implementation 'com.bloxbean.cardano:cardano-client-lib:0.6.2'
     implementation 'com.bloxbean.cardano:cardano-client-backend-blockfrost:0.5.1'
+
+    implementation group: 'com.squareup', name: 'gifencoder', version: '0.10.1'
 //    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
@@ -43,49 +45,9 @@ jar {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from(components.java)
-
-            pom {
-                name.set("hummingbird")
-                description.set("Java implementation of Uniform Resources (UR)")
-                url.set("https://github.com/sparrowwallet/hummingbird")
-                licenses {
-                    license {
-                        name.set("The Apache Software License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("craigraw")
-                        name.set("Craig Raw")
-                        email.set("mail@sparrowwallet.com")
-                    }
-                }
-                scm {
-                    connection.set("scm:https://github.com/sparrowwallet/hummingbird.git")
-                    developerConnection.set("scm:git@github.com:sparrowwallet/hummingbird.git")
-                    url.set("https://github.com/sparrowwallet/hummingbird")
-                }
-            }
-        }
-    }
     repositories {
         mavenLocal()
         mavenCentral()
-    }
-}
-
-nexusPublishing {
-    packageGroup = "com.sparrowwallet.hummingbird"
-    repositories {
-        sonatype {
-            stagingProfileId = "a63b4b5e2bff9"
-            username = project.findProperty("ossrhToken")
-            password = project.findProperty("ossrhTokenPassword")
-        }
     }
 }
 

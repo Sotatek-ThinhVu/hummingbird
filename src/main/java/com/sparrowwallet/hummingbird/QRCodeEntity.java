@@ -1,11 +1,10 @@
 package com.sparrowwallet.hummingbird;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Builder
 @Getter
+@Setter
+@NoArgsConstructor
 public class QRCodeEntity {
 
     private UR data;

@@ -1,10 +1,18 @@
 package com.sparrowwallet.hummingbird.registry.cardano;
 
 import co.nstant.in.cbor.model.*;
+import com.sparrowwallet.hummingbird.HexUtils;
 import com.sparrowwallet.hummingbird.registry.CryptoKeypath;
 import com.sparrowwallet.hummingbird.registry.RegistryItem;
 import com.sparrowwallet.hummingbird.registry.RegistryType;
+import com.sparrowwallet.hummingbird.registry.pathcomponent.IndexPathComponent;
+import com.sparrowwallet.hummingbird.registry.pathcomponent.PathComponent;
+import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
 public class CardanoUtxo extends RegistryItem {
 
     public static final int TRANSACTION_HASH = 1;
@@ -31,6 +39,15 @@ public class CardanoUtxo extends RegistryItem {
         this.address = address;
     }
 
+    // Constructor
+    public CardanoUtxo(CardanoUtxoProps props) {
+        this.transactionHash = props.transactionHash;
+        this.index = props.index;
+        this.amount = props.amount;
+        this.keyPath = props.keyPath;
+        this.address = props.address;
+    }
+
     public DataItem toCbor(){
         Map map = new Map();
         if (transactionHash != null){
@@ -52,26 +69,6 @@ public class CardanoUtxo extends RegistryItem {
         return map;
     }
 
-    public byte[] getTransactionHash() {
-        return transactionHash;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public String getAmount() {
-        return amount;
-    }
-
-    public CryptoKeypath getKeyPath() {
-        return keyPath;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
     @Override
     public RegistryType getRegistryType() {
         return RegistryType.CARDANO_UTXO;
@@ -83,7 +80,6 @@ public class CardanoUtxo extends RegistryItem {
         String amount = null;
         CryptoKeypath keyPath = null;
         String address = null;
-        byte[] xfp = null;
 
         Map map = (Map)item;
 
@@ -108,5 +104,29 @@ public class CardanoUtxo extends RegistryItem {
         }
 
         return new CardanoUtxo(transactionHash, index, amount, keyPath, address);
+    }
+
+    public static CardanoUtxo constructCardanoUtxo(CardanoUtxoData data) {
+        String[] paths = data.hdPath.replaceFirst("[mM]/", "").split("/");
+        List<PathComponent> pathComponents = new ArrayList<>();
+
+        for (String path : paths) {
+            int index = Integer.parseInt(path.replace("'", ""));
+            boolean isHardened = path.endsWith("'");
+            pathComponents.add(new IndexPathComponent(index, isHardened));
+        }
+
+        CryptoKeypath hdpathObject = new CryptoKeypath(
+                pathComponents,
+                HexUtils.decodeHexString(data.getXfp())
+        );
+
+        return new CardanoUtxo(new CardanoUtxoProps(
+                HexUtils.decodeHexString(data.transactionHash),
+                data.index,
+                data.amount,
+                hdpathObject,
+                data.address
+        ));
     }
 }

@@ -4,9 +4,15 @@ import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnsignedInteger;
+import com.sparrowwallet.hummingbird.HexUtils;
 import com.sparrowwallet.hummingbird.registry.CryptoKeypath;
 import com.sparrowwallet.hummingbird.registry.RegistryItem;
 import com.sparrowwallet.hummingbird.registry.RegistryType;
+import com.sparrowwallet.hummingbird.registry.pathcomponent.IndexPathComponent;
+import com.sparrowwallet.hummingbird.registry.pathcomponent.PathComponent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CardanoCertKey extends RegistryItem {
 
@@ -21,6 +27,12 @@ public class CardanoCertKey extends RegistryItem {
     public CardanoCertKey(byte[] keyHash, CryptoKeypath keyPath) {
         this.keyHash = keyHash;
         this.keyPath = keyPath;
+    }
+
+    // Constructor
+    public CardanoCertKey(CardanoCertKeyProps props) {
+        this.keyHash = props.getKeyHash();
+        this.keyPath = props.getKeyPath();
     }
 
     public CryptoKeypath getKeyPath() {
@@ -66,5 +78,25 @@ public class CardanoCertKey extends RegistryItem {
             throw new IllegalArgumentException("CardanoCertKey keyHash is required");
         }
         return new CardanoCertKey(keyHash, keyPath);
+    }
+
+    public static CardanoCertKey constructCardanoCertKey(CardanoCertKeyData data) {
+        String[] paths = data.getKeyPath().replaceFirst("[mM]/", "").split("/");
+        List<PathComponent> pathComponents = new ArrayList<>();
+
+        for (String path : paths) {
+            int index = Integer.parseInt(path.replace("'", ""));
+            boolean isHardened = path.endsWith("'");
+            pathComponents.add(new IndexPathComponent(index, isHardened));
+        }
+
+        CryptoKeypath hdpathObject = new CryptoKeypath(
+                pathComponents,
+                HexUtils.decodeHexString(data.getXfp()));
+
+        return new CardanoCertKey(new CardanoCertKeyProps(
+                HexUtils.decodeHexString(data.getKeyHash()),
+                hdpathObject
+        ));
     }
 }

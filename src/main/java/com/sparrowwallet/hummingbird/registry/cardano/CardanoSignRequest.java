@@ -1,12 +1,19 @@
 package com.sparrowwallet.hummingbird.registry.cardano;
 
 import co.nstant.in.cbor.model.*;
+import com.sparrowwallet.hummingbird.HexUtils;
 import com.sparrowwallet.hummingbird.registry.RegistryItem;
 import com.sparrowwallet.hummingbird.registry.RegistryType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+@Getter
+@NoArgsConstructor
 public class CardanoSignRequest extends RegistryItem {
 
     private static class Keys {
@@ -16,38 +23,19 @@ public class CardanoSignRequest extends RegistryItem {
         public static final int EXTRA_SIGNERS = 4;
         public static final int ORIGIN = 5;
     }
-    private String requestId;
+    private byte[] requestId;
     private byte[] signData;
     private List<CardanoUtxo> utxos;
     private List<CardanoCertKey> extraSigners;
     private String origin;
 
-    public CardanoSignRequest(){
-
-    }
-
-    public CardanoSignRequest(String requestId, byte[] signData, List<CardanoUtxo> utxos, List<CardanoCertKey> extraSigners, String origin) {
-        this.requestId = requestId;
-        this.signData = signData;
-        this.utxos = utxos;
-        this.extraSigners = extraSigners;
-        this.origin = origin;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-    public byte[] getSignData() {
-        return signData;
-    }
-    public List<CardanoUtxo> getUtxos() {
-        return utxos;
-    }
-    public List<CardanoCertKey> getExtraSigners() {
-        return extraSigners;
-    }
-    public String getOrigin() {
-        return origin;
+    // Constructor
+    public CardanoSignRequest(SignRequestProps props) {
+        this.requestId = props.requestId;
+        this.signData = props.signData;
+        this.utxos = props.utxos;
+        this.extraSigners = props.extraSigners;
+        this.origin = props.origin;
     }
 
     @Override
@@ -59,7 +47,7 @@ public class CardanoSignRequest extends RegistryItem {
     public DataItem toCbor() {
         Map map = new Map();
         if (requestId != null) {
-            map.put(new UnsignedInteger(Keys.REQUEST_ID), new UnicodeString(requestId));
+            map.put(new UnsignedInteger(Keys.REQUEST_ID), new ByteString(requestId));
         }
         if (signData != null) {
             map.put(new UnsignedInteger(Keys.SIGN_DATA), new ByteString(signData));
@@ -127,6 +115,29 @@ public class CardanoSignRequest extends RegistryItem {
         if (utxos.isEmpty()){
             throw new IllegalArgumentException("CardanoSignRequest utxos is required");
         }
-        return new CardanoSignRequest(requestId, signData, utxos, extraSigners, origin);
+        return new CardanoSignRequest(new SignRequestProps(HexUtils.decodeHexString(requestId), signData, utxos, extraSigners, origin));
+    }
+
+    public static CardanoSignRequest constructCardanoSignRequest(
+            byte[] signData,
+            List<CardanoUtxoData> utxos,
+            List<CardanoCertKeyData> extraSigners,
+            String uuidString,
+            String origin) {
+
+        List<CardanoCertKey> signers = new ArrayList<>();
+
+        List<CardanoUtxo> cardanoUtxos = utxos.stream()
+                .map(CardanoUtxo::constructCardanoUtxo)
+                .collect(Collectors.toList());
+
+        if (Objects.nonNull(extraSigners)) {
+            signers.addAll(extraSigners.stream()
+                    .map(CardanoCertKey::constructCardanoCertKey)
+                    .toList());
+        }
+        byte[] requestId = uuidString != null ? HexUtils.decodeHexString(uuidString) : null;
+
+        return new CardanoSignRequest(new SignRequestProps(requestId, signData, cardanoUtxos, signers, origin));
     }
 }

@@ -1,9 +1,6 @@
 package com.sparrowwallet.hummingbird.registry;
 
-import com.sparrowwallet.hummingbird.registry.cardano.CardanoCertKey;
-import com.sparrowwallet.hummingbird.registry.cardano.CardanoSignRequest;
-import com.sparrowwallet.hummingbird.registry.cardano.CardanoSignature;
-import com.sparrowwallet.hummingbird.registry.cardano.CardanoUtxo;
+import com.sparrowwallet.hummingbird.registry.cardano.*;
 
 public enum RegistryType {
     BYTES("bytes", null, byte[].class),
@@ -41,7 +38,7 @@ public enum RegistryType {
     CARDANO_UTXO("cardano-utxo", 40312, CardanoUtxo.class),
     CARDANO_SIGNATURE("cardano-signature", 2203, CardanoSignature.class),
     CARDANO_CERT_KEY("cardano-cert-key", 2204, CardanoCertKey.class),
-    CARDANO_SIGN_REQUEST("cardano-sign-request", 2202, CardanoSignRequest.class),;
+    CARDANO_SIGN_REQUEST("cardano-sign-request", 2202, CardanoSignRequest.class);
 
     private final String type;
     private final Integer tag;

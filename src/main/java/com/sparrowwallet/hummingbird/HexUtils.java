@@ -27,19 +27,13 @@ public class HexUtils {
     }
 
     public static byte[] decodeHexString(String hexString) {
-        if(hexString != null && hexString.startsWith("0x"))
-            hexString = hexString.substring(2);
-
-        if (hexString.length() % 2 == 1) {
-            throw new IllegalArgumentException(
-                    "Invalid hexadecimal String supplied. " + hexString);
+        int len = hexString.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+                    + Character.digit(hexString.charAt(i + 1), 16));
         }
-
-        byte[] bytes = new byte[hexString.length() / 2];
-        for (int i = 0; i < hexString.length(); i += 2) {
-            bytes[i / 2] = hexToByte(hexString.substring(i, i + 2));
-        }
-        return bytes;
+        return data;
     }
 
     public static byte hexToByte(String hexString) {

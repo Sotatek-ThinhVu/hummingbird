@@ -49,7 +49,7 @@ public class CardanoSignRequest extends RegistryItem {
         if (requestId != null) {
             DataItem item = new ByteString(requestId);
             item.setTag(37);
-            map.put(new UnsignedInteger(Keys.REQUEST_ID),item );
+            map.put(new UnsignedInteger(Keys.REQUEST_ID), item );
         }
         if (signData != null) {
             map.put(new UnsignedInteger(Keys.SIGN_DATA), new ByteString(signData));
@@ -84,7 +84,7 @@ public class CardanoSignRequest extends RegistryItem {
     }
 
     public static CardanoSignRequest fromCbor(DataItem item) {
-        String requestId = null;
+        byte[] requestId = null;
         byte[] signData = null;
         List<CardanoUtxo> utxos = new ArrayList<>();
         List<CardanoCertKey> extraSigners = new ArrayList<>();
@@ -94,7 +94,7 @@ public class CardanoSignRequest extends RegistryItem {
             UnsignedInteger uintKey = (UnsignedInteger)key;
             int intKey = uintKey.getValue().intValue();
             if (intKey == Keys.REQUEST_ID){
-                requestId = ((UnicodeString)map.get(key)).getString();
+                requestId = ((ByteString)map.get(key)).getBytes();
             } else if (intKey == Keys.SIGN_DATA){
                 signData = ((ByteString)map.get(key)).getBytes();
             } else if (intKey == Keys.UTXOS){
@@ -117,7 +117,7 @@ public class CardanoSignRequest extends RegistryItem {
         if (utxos.isEmpty()){
             throw new IllegalArgumentException("CardanoSignRequest utxos is required");
         }
-        return new CardanoSignRequest(new SignRequestProps(HexUtils.decodeHexString(requestId), signData, utxos, extraSigners, origin));
+        return new CardanoSignRequest(new SignRequestProps(requestId, signData, utxos, extraSigners, origin));
     }
 
     public static CardanoSignRequest constructCardanoSignRequest(

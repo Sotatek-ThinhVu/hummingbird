@@ -56,7 +56,9 @@ public class CardanoCertKey extends RegistryItem {
             map.put(new UnsignedInteger(Keys.KEY_HASH), new ByteString(keyHash));
         }
         if (keyPath != null){
-            map.put(new UnsignedInteger(Keys.KEY_PATH), keyPath.toCbor());
+            DataItem item = keyPath.toCbor();
+            item.setTag(RegistryType.CRYPTO_KEYPATH.getTag());
+            map.put(new UnsignedInteger(Keys.KEY_PATH), item);
         }
         return map;
     }

@@ -1,12 +1,16 @@
 package com.sparrowwallet.hummingbird;
 
-import com.google.zxing.BarcodeFormat;
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.madgag.gif.fmsware.AnimatedGifEncoder;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,5 +57,14 @@ public class QRCodeUtils {
         } catch (Exception e) {
             System.out.println("Error generating QR code: " + e.getMessage());
         }
+    }
+
+    public static String decodeQRCode(File qrCodeImage) throws Exception {
+        BufferedImage bufferedImage = ImageIO.read(qrCodeImage);
+        LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
+        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+
+        Result result = new MultiFormatReader().decode(bitmap);
+        return result.getText();
     }
 }

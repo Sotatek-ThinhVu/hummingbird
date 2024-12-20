@@ -114,7 +114,6 @@ public class CardanoSignRequestTest {
 
     @Test
     public void testGenerateCardanoSignRequest() throws CborSerializationException {
-
         String requestId = UUID.randomUUID().toString();
         requestId = requestId.replace("-", "");
         var tuple = buildTx();

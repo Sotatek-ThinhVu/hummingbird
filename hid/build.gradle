@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.sparrowwallet'
+version = '1.7.4'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation('org.hid4java:hid4java:0.8.0')
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -58,13 +58,4 @@ public class QRCodeUtils {
             System.out.println("Error generating QR code: " + e.getMessage());
         }
     }
-
-    public static String decodeQRCode(File qrCodeImage) throws Exception {
-        BufferedImage bufferedImage = ImageIO.read(qrCodeImage);
-        LuminanceSource source = new BufferedImageLuminanceSource(bufferedImage);
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-
-        Result result = new MultiFormatReader().decode(bitmap);
-        return result.getText();
-    }
 }

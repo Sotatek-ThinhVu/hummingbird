@@ -7,6 +7,8 @@ import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import com.sparrowwallet.hummingbird.registry.*;
+import com.sparrowwallet.hummingbird.registry.cardano.CardanoSignRequest;
+import com.sparrowwallet.hummingbird.registry.cardano.CardanoSignature;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -98,6 +100,10 @@ public class UR {
                 return URAccountDescriptor.fromCbor(item);
             } else if(registryType == RegistryType.SSKR) {
                 return URSSKR.fromCbor(item);
+            } else if (registryType == RegistryType.CARDANO_SIGN_REQUEST){
+                return CardanoSignRequest.fromCbor(item);
+            } else if (registryType == RegistryType.CARDANO_SIGNATURE){
+                return CardanoSignature.fromCbor(item);
             }
         } catch(CborException e) {
             throw new InvalidCBORException(e.getMessage());

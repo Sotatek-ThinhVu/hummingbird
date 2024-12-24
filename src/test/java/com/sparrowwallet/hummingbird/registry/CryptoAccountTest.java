@@ -4,6 +4,7 @@ import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.DataItem;
 import com.sparrowwallet.hummingbird.*;
+import com.sparrowwallet.hummingbird.registry.cardano.CardanoSignRequest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -168,6 +169,20 @@ public class CryptoAccountTest {
             if(urResult.ur.getRegistryType().equals(RegistryType.CRYPTO_ACCOUNT)) {
                 CryptoAccount cryptoAccount = (CryptoAccount)urResult.ur.decodeFromRegistry();
                 Assert.assertEquals("<0;1>/*", cryptoAccount.getOutputDescriptors().get(0).getHdKey().getChildren().getPath());
+            }
+        }
+    }
+
+    @Test
+    public void testCardanoSignRequest() throws UR.InvalidCBORException {
+        String ur = "ur:cardano-sign-request/oxadtpdagdisosfsrscwvlfxcplesnzmynfzndbngeaohdsrlroxaelylfhdcxpssglkqzgyurtandbtnyhpihptbsdkgmzsykbweottlecnbgwpdpcnhfkghkkbihadadlfoeaehdesaeehvydeoejtbgfldpnlbwckwyjndnltcsoyglwersielkkpbzeylsghdmbzuyioplfplymwttamwydygasgmyutswdessvylrlnfgckgrfejkbwdkadcyaecklrlaoeaehdesaeaasbrkoyytlokizedemyamryoldlinfrgyfxbbaxvdrdwtoemhzcmyreftfxhghtaasrbyztvosnamkebaknsptsmyrhrlrfhejseydnpalagthgadcwaeaeaeaddtmhpslraocyaeaomodpaxcyaaosecgmnbykynaxlytaaynlonadhdcxpssglkqzgyurtandbtnyhpihptbsdkgmzsykbweottlecnbgwpdpcnhfkghkkbihaoadaximeeeseseeeeeteyeseseoaataaddyoeadlecfatfnykcfatchykaeykaewkaewkaocyvddmwlskahksjzhsieiejphejyihjkjyehjsjsknkoiskthsjojzkskketjnjzeoioeokpjpjyjniyeodyiekkhseeknjkiaecjsdyjtjneekpesknimjpemiajzieiyenioiejyeeecjoksjpknetemktesjtioksdyjketeteeimksiseoemkpjndydyknjzktkkihkniskokojsiyeejyjkiyjydyksjzeoaalaoswlcebw";
+        URDecoder urDecoder = new URDecoder();
+        urDecoder.receivePart(ur);
+        URDecoder.Result urResult = urDecoder.getResult();
+        if (urResult.type == ResultType.SUCCESS){
+            if (urResult.ur.getRegistryType().equals(RegistryType.CARDANO_SIGN_REQUEST)){
+                CardanoSignRequest cardanoSignRequest = (CardanoSignRequest) urResult.ur.decodeFromRegistry();
+                QRCodeUtils.generateQRCode(new QRCodeEntity(cardanoSignRequest.toUR(), "cardano-sign-request.gif", 1000, 100));
             }
         }
     }

@@ -29,6 +29,9 @@ import com.sparrowwallet.HidLedgerDevice;
 import com.sparrowwallet.LedgerDevice;
 import org.hid4java.*;
 
+import javax.smartcardio.CardChannel;
+import javax.smartcardio.CommandAPDU;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -71,16 +74,48 @@ public class UsbHidEnumerationExample extends BaseExample {
   private static void handleLedgerDevice(HidDevice hidDevice) {
     hidDevice.open();
 
+    CardChannel cardChannel = null;
+    cardChannel.transmit(new CommandAPDU(new byte[] {0x00, 0x01, 0x00, 0x00}));
     System.out.println(hidDevice.isClosed());
     HidLedgerDevice device = new HidLedgerDevice(hidDevice);
-    APDUCommand command = new APDUCommand(0xB0, (byte) 0x3C, 0x00, 0x00, true);
+    // e001000000
+//    APDUCommand command = constructGetPublicKeyCommand(0xe0, 0x42, 0x01, 0x02, "m/1852'/1815'/0'/0/0");
+    APDUCommand command = new APDUCommand(0xe0, 0x01, 0x00, 0x00, true);
     APDUResponse response = device.exchange(command);
 
+    System.out.println(response.getSW1());
     System.out.println(response.getSW1() == RESULT_OK ? "OK" : "ERROR");
     System.out.println(new String(response.getData(), StandardCharsets.UTF_8));
 
       // TODO
     device.close();
+  }
+
+  public static APDUCommand constructGetPublicKeyCommand(int cla, int ins, int p1, int p2, String bip32Path) {
+
+    // Encode BIP-32 Path
+    String[] pathComponents = bip32Path.split("/");
+    if (!pathComponents[0].equals("m")) {
+      throw new IllegalArgumentException("BIP-32 path must start with 'm'");
+    }
+
+    int pathLength = pathComponents.length - 1;
+    ByteBuffer buffer = ByteBuffer.allocate(1 + pathLength * 4);
+    buffer.put((byte) pathLength); // Number of components
+
+    for (int i = 1; i < pathComponents.length; i++) {
+      String component = pathComponents[i];
+      boolean hardened = component.endsWith("'");
+      int index = Integer.parseInt(component.replace("'", ""));
+      if (hardened) {
+        index |= 0x80000000; // Add hardened flag
+      }
+      buffer.putInt(index);
+    }
+
+    byte[] data = buffer.array();
+
+    return new APDUCommand(cla, ins, p1, p2, data);
   }
 
 }

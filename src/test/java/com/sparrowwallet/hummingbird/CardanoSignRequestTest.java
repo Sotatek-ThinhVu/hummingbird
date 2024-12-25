@@ -78,11 +78,13 @@ public class CardanoSignRequestTest {
                 .payToAddress(receiver, Amount.ada(1.5))
                 .from(sender);
 
+        System.out.println(sender);
+
         QuickTxBuilder quickTxBuilder = new QuickTxBuilder(backendService);
         var transaction = quickTxBuilder
                 .compose(tx1)
                 .feePayer(sender)
-                .withSerializationEra(Era.Conway)
+                .withSerializationEra(Era.Babbage)
                 .build();
 
         var utxos = transaction.getBody()
@@ -115,14 +117,14 @@ public class CardanoSignRequestTest {
     @Test
     public void testGenerateCardanoSignRequest() throws CborSerializationException {
         String requestId = UUID.randomUUID().toString();
-        requestId = requestId.replace("-", "");
         var tuple = buildTx();
         byte[] signData = HexUtils.decodeHexString(tuple._1);
         System.out.println(HexUtils.encodeHexString(signData));
         List<CardanoUtxoData> utxos = new ArrayList<>();
         List<CardanoCertKeyData> extraSigners = new ArrayList<>();
-        String origin = null;
+        String origin = "cardano-wallet";
 
+        // 1852H/1815H/0H/0/0
         CryptoKeypath cryptoKeypath = new CryptoKeypath(List.of(new IndexPathComponent(1852, true), new IndexPathComponent(1815, true), new IndexPathComponent(0, true), new IndexPathComponent(0, false), new IndexPathComponent(0, false)), HexUtils.decodeHexString("73c5da0a"));
 
         for (var utx: tuple._2) {
@@ -131,6 +133,7 @@ public class CardanoSignRequestTest {
         }
 
         CardanoSignRequest request = CardanoSignRequest.constructCardanoSignRequest(signData, utxos, extraSigners, requestId, origin);
+        System.out.println(HexUtils.encodeHexString(request.toUR().getCborBytes()));
         QRCodeUtils.generateQRCode(new QRCodeEntity(request.toUR(), "cardano-sign-request.gif", 1000, 100));
     }
 
@@ -139,20 +142,18 @@ public class CardanoSignRequestTest {
 
         var backendService = new BFBackendService(Constants.BLOCKFROST_PREPROD_URL, "preprod0xr6NRQNoIK8X9IvpkwiVfFF2tEIK27g");
 
-        String txnHex = "84a40081825820ee29fc1f68991a2ca01d6ad605d138d8ec44bb595ea5329419a0e61be8796d91010182a20058390031e128a26e12472d99131eee6d2b8718a14eedbf648c75153283542e15db67ae418194d106ee3049ca8fddc628c4e18486461e4b45731324011a000f4240a20058390004cbbba1f9887dfe288f06bda62f693b51431403e7baf0a290fd8fb53a43575a04c311fce2cd067c0e7ac8d78fb9b7bc5f71322bb1804d57011b00000001296d03aa021a0002922d031a04ab1b8fa0f5f6";
+        // it's the signData field from the CardanoSignRequest
+        String txnHex = "84a30081825820cfdac8cf5359338e32af536de92274d1bb69685f3d1fd7b8e28f790d7c6140d70301828258390031e128a26e12472d99131eee6d2b8718a14eedbf648c75153283542e15db67ae418194d106ee3049ca8fddc628c4e18486461e4b457313241a0016e3608258390004cbbba1f9887dfe288f06bda62f693b51431403e7baf0a290fd8fb53a43575a04c311fce2cd067c0e7ac8d78fb9b7bc5f71322bb1804d571a4a5c97ab021a00028fc5a0f5f6";
 
-        String cardanoSignUR = "ur:cardano-signature/oeadtpdagdlgwdasvtbstygttpqdsngtdreokobdssaohdisoyaelylfhdcxmuhfcyaazmoypajodrsefthfrpfpfzoyahetlrsffxftjlahwfttenswimltintohdfzsscsgsbetogtbbhkgeldrslaftwmaasbrhbelkckbwjomyzcwesfpdbgbgnnmteocfhpvtfmnnjyurtpgrjyykwmlgbgspntbbtajpfdnldyqzsnrtwehhgspywndeahlavyfmuy";
+        // When scanning the QR code after signing the transaction on the device, we can retrieve the Cardano signature
+        String cardanoSignUR = "ur:cardano-signature/oeadtpdagmbkoemnhsynasctfzbbyattwsothnurvoemltaofxoyaelabemwjngw";
 
         CardanoSignature signature = getCardanoSignature(cardanoSignUR);
 
         Transaction transaction = Transaction.deserialize(HexUtils.decodeHexString(txnHex));
 
         DataItem witnessDI = CborSerializationUtil.deserialize(signature.getWitnessSet());
-        Map map = (Map) witnessDI;
-        Array array = new Array();
-        array.add(witnessDI);
-        map.put(new UnsignedInteger(0), array);
-        TransactionWitnessSet walletWitnessSet = TransactionWitnessSet.deserialize(map);
+        TransactionWitnessSet walletWitnessSet = TransactionWitnessSet.deserialize((Map) witnessDI);
 
         if(transaction.getWitnessSet() == null){
             transaction.setWitnessSet(new TransactionWitnessSet());
@@ -167,7 +168,6 @@ public class CardanoSignRequestTest {
 
         HdKeyGenerator hdKeyGenerator = new HdKeyGenerator();
         HdKeyPair keyPair = hdKeyGenerator.getRootKeyPairFromEntropy(entropy);
-
 
         Transaction signedTxn = TransactionSigner.INSTANCE.sign(transaction, keyPair);
 
